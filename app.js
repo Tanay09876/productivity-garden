@@ -503,7 +503,24 @@ class HarvestAnimation {
 
             // Draw the current plant image
             const img = this.imageCache.get(currentPlant.icon);
-            if (img) {
+            
+            // If image not in cache, try to load it (but don't draw until it loads)
+            if (!img) {
+                const imgPath = `assets/${anim.tier}/${currentPlant.icon}`;
+                const newImg = new Image();
+                newImg.src = imgPath;
+                newImg.onload = () => {
+                    this.imageCache.set(currentPlant.icon, newImg);
+                };
+                newImg.onerror = () => {
+                    console.warn(`Failed to load image: ${imgPath}`);
+                };
+                // Show emoji while loading
+                ctx.font = anim.complete ? '40px serif' : '45px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🌺', x, y);
+            } else if (img.complete && img.naturalWidth > 0) {
                 const imgSize = anim.complete ? 60 : 70; // Slightly larger during animation
                 ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
             } else {
@@ -593,12 +610,14 @@ class GardenRenderer {
         Object.entries(PLANT_DATABASE).forEach(([tier, plants]) => {
             plants.forEach(plant => {
                 const img = new Image();
-                img.src = `assets/${tier}/${plant.icon}`;
+                const imgPath = `assets/${tier}/${plant.icon}`;
+                img.src = imgPath;
                 img.onload = () => {
                     this.imageCache.set(plant.icon, img);
+                    console.log(`Loaded image: ${imgPath}`);
                 };
                 img.onerror = () => {
-                    console.warn(`Failed to load image: assets/${tier}/${plant.icon}`);
+                    console.error(`Failed to load image: ${imgPath} - Check if file exists and path is correct`);
                 };
             });
         });
@@ -816,7 +835,24 @@ class GardenRenderer {
         if (plant.harvested && plant.harvestedPlant) {
             // Draw the harvested plant image
             const img = this.imageCache.get(plant.harvestedPlant.icon);
-            if (img) {
+            
+            // If image not in cache, try to load it (but don't draw until it loads)
+            if (!img) {
+                const imgPath = `assets/${plant.tier}/${plant.harvestedPlant.icon}`;
+                const newImg = new Image();
+                newImg.src = imgPath;
+                newImg.onload = () => {
+                    this.imageCache.set(plant.harvestedPlant.icon, newImg);
+                };
+                newImg.onerror = () => {
+                    console.warn(`Failed to load image: ${imgPath}`);
+                };
+                // Show emoji while loading
+                this.ctx.font = '40px serif';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText('🌺', x, y);
+            } else if (img.complete && img.naturalWidth > 0) {
                 // Draw image centered at plant position
                 const imgSize = 60;
                 this.ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
@@ -1000,6 +1036,11 @@ function showPlantdex() {
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.style.objectFit = 'cover';
+                img.onerror = function() {
+                    console.warn(`Failed to load image: assets/${tier}/${plant.icon}`);
+                    this.style.display = 'none';
+                    icon.textContent = '🌺';
+                };
                 icon.appendChild(img);
             } else {
                 icon.textContent = '?';
@@ -1104,6 +1145,12 @@ function showPlantDetail(tier, plant, count) {
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'cover';
+    img.onerror = function() {
+        console.warn(`Failed to load image: assets/${tier}/${plant.icon}`);
+        this.style.display = 'none';
+        icon.textContent = '🌺';
+        icon.style.fontSize = '4rem';
+    };
     icon.appendChild(img);
     icon.style.background = `linear-gradient(135deg, ${TIER_COLORS[tier]}33 0%, ${TIER_COLORS[tier]}66 100%)`;
     name.textContent = plant.name;
