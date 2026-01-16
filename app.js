@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
 const GAME_CONFIG = {
     MAX_SEEDS: 5,
     MAX_PLANTS: Infinity, // Unlimited plants
-    MIN_COMPLETE_TIME: 5 * 60 * 1000, // 5 minutes in ms (MODIFIED for faster testing)
+    MIN_COMPLETE_TIME: 20 * 60 * 1000, // 5 minutes in ms (MODIFIED for faster testing)
     GROWTH_STAGES: [
         { time: 0, label: 'Seed' },
         { time: 20 * 60 * 1000, label: 'Sprout' },
